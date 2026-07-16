@@ -100,6 +100,27 @@
   .seg button.active[data-cat="breakfast"]{background:var(--yolk-soft);color:#8A6210}
   .seg button.active[data-cat="main"]{background:var(--green-soft);color:var(--green)}
 
+  /* ---------- Фильтры способа приготовления ---------- */
+  .filters{
+    display:flex;gap:8px;overflow-x:auto;margin:0 -16px 14px;padding:0 16px 6px;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none;
+  }
+  .filters::-webkit-scrollbar{display:none}
+  .filters button{
+    flex:none;padding:8px 14px;border-radius:999px;border:1px solid var(--line);
+    background:var(--card);font-size:13px;font-weight:500;color:var(--ink-soft);
+  }
+  .filters button.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  /* ---------- Теги на карточках ---------- */
+  .tags{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .tag{
+    font-size:11px;padding:3px 9px;border-radius:6px;
+    background:var(--bg);border:1px solid var(--line);color:var(--ink-soft);white-space:nowrap;
+  }
+  .stars{color:var(--yolk);font-size:12px;letter-spacing:1px}
+  .stars .off{color:var(--line)}
+
   /* ---------- Сетка карточек ---------- */
   .grid{display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:24px}
   @media(min-width:600px){.grid{grid-template-columns:1fr 1fr}}
@@ -162,8 +183,15 @@
   .sheet .dish-desc{font-size:14px;margin-bottom:16px}
 
   .kbju{
-    display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px;
+    display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;
   }
+  .price-line{
+    display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:10px 14px;margin-bottom:10px;
+  }
+  .price-line b{font-family:var(--font-mono);font-size:16px}
+  .price-line span{font-size:12px;color:var(--ink-soft)}
   .kbju div{
     background:var(--card);border:1px solid var(--line);border-radius:12px;
     padding:10px 6px;text-align:center;
@@ -309,6 +337,15 @@
     <button data-cat="main" class="active" data-action="cat">🍲 Основной приём</button>
   </div>
 
+  <div class="filters" id="filters">
+    <button class="active" data-action="method" data-m="all">Все</button>
+    <button data-action="method" data-m="Аэрогриль">Аэрогриль</button>
+    <button data-action="method" data-m="Духовка">Духовка</button>
+    <button data-action="method" data-m="Жарка">Жарка</button>
+    <button data-action="method" data-m="Варка">Варка</button>
+    <button data-action="method" data-m="Без готовки">Без готовки</button>
+  </div>
+
   <div class="grid" id="grid"></div>
 </main>
 
@@ -337,7 +374,9 @@
       <span class="cat-tag" id="d-tag"></span>
       <h2 id="d-name"></h2>
       <p class="dish-desc" id="d-desc"></p>
+      <div class="tags" id="d-tags" style="margin-bottom:14px"></div>
       <div class="kbju" id="d-kbju"></div>
+      <div class="price-line"><b id="d-price"></b><span>примерная сумма заказа всех ингредиентов целыми упаковками. Базовые продукты (масло, соль, специи) обычно уже есть дома — реальный чек может быть ниже</span></div>
       <h3>Состав</h3>
       <ul class="ing-list" id="d-ings"></ul>
       <h3>Как приготовить</h3>
@@ -364,7 +403,7 @@ window.addEventListener('error',function(e){
    Позже заменим на реальные подборки из твоих продуктов. */
 const DISHES=[
   {
-    id:'oatmeal',cat:'breakfast',emoji:'🥣',
+    id:'oatmeal',methods:['Варка'],diff:1,price:650,cat:'breakfast',emoji:'🥣',
     name:'Овсяная каша с бананом и мёдом',
     desc:'Тёплая каша на молоке, сверху банан, мёд и немного грецких орехов. Заглушка описания — здесь будет пара предложений о блюде.',
     kbju:{k:410,b:12,zh:11,u:66},time:'15 мин',
@@ -379,7 +418,7 @@ const DISHES=[
     ]
   },
   {
-    id:'syrniki',cat:'breakfast',emoji:'🥞',
+    id:'syrniki',methods:['Жарка'],diff:2,price:660,cat:'breakfast',emoji:'🥞',
     name:'Сырники со сметаной',
     desc:'Классические сырники из творога 5%, обжаренные до золотистой корочки. Подаются со сметаной или вареньем.',
     kbju:{k:380,b:24,zh:16,u:32},time:'25 мин',
@@ -395,7 +434,7 @@ const DISHES=[
     ]
   },
   {
-    id:'omelet',cat:'breakfast',emoji:'🍳',
+    id:'omelet',methods:['Жарка'],diff:1,price:760,cat:'breakfast',emoji:'🍳',
     name:'Омлет с овощами и сыром',
     desc:'Пышный омлет с помидором, болгарским перцем и тёртым сыром. Быстрый сытный завтрак.',
     kbju:{k:340,b:22,zh:24,u:8},time:'15 мин',
@@ -411,7 +450,21 @@ const DISHES=[
     ]
   },
   {
-    id:'puree-kotlety',cat:'main',emoji:'🍗',
+    id:'granola',methods:['Без готовки'],diff:1,price:850,cat:'breakfast',emoji:'🥛',
+    name:'Йогурт с гранолой и ягодами',
+    desc:'Завтрак без готовки: густой йогурт, хрустящая гранола и горсть ягод. Собирается за пару минут.',
+    kbju:{k:320,b:14,zh:9,u:46},time:'5 мин',
+    ings:[
+      ['Йогурт греческий','170 г'],['Гранола','40 г'],
+      ['Ягоды свежие или замороженные','80 г'],['Мёд','1 ч. л.']
+    ],
+    steps:[
+      'Выложить йогурт в миску или стакан.',
+      'Засыпать гранолой, добавить ягоды и мёд.'
+    ]
+  },
+  {
+    id:'puree-kotlety',methods:['Варка','Жарка'],diff:2,price:1100,cat:'main',emoji:'🍗',
     name:'Картофельное пюре с куриными котлетами и овощным салатом',
     desc:'Тот самый пример: нежное пюре на молоке и масле, сочные котлеты из куриного фарша и свежий салат из огурцов и помидоров.',
     kbju:{k:620,b:38,zh:24,u:60},time:'50 мин',
@@ -430,7 +483,7 @@ const DISHES=[
     ]
   },
   {
-    id:'grechka',cat:'main',emoji:'🥩',
+    id:'grechka',methods:['Жарка','Варка'],diff:2,price:1000,cat:'main',emoji:'🥩',
     name:'Гречка с тушёной говядиной',
     desc:'Рассыпчатая гречка и говядина, тушённая с луком и морковью до мягкости. Домашняя классика.',
     kbju:{k:560,b:34,zh:20,u:58},time:'1 ч 20 мин',
@@ -448,7 +501,7 @@ const DISHES=[
     ]
   },
   {
-    id:'pasta-chicken',cat:'main',emoji:'🍝',
+    id:'pasta-chicken',methods:['Варка','Жарка'],diff:2,price:980,cat:'main',emoji:'🍝',
     name:'Паста с курицей в сливочном соусе',
     desc:'Пенне с кусочками куриного филе в сливочном соусе с чесноком и сыром.',
     kbju:{k:640,b:36,zh:26,u:62},time:'30 мин',
@@ -464,7 +517,7 @@ const DISHES=[
     ]
   },
   {
-    id:'fish-rice',cat:'main',emoji:'🐟',
+    id:'fish-rice',methods:['Духовка','Аэрогриль','Варка'],diff:2,price:970,cat:'main',emoji:'🐟',
     name:'Запечённая рыба с рисом и брокколи',
     desc:'Филе минтая или трески, запечённое с лимоном, гарнир из риса и брокколи на пару.',
     kbju:{k:480,b:40,zh:10,u:56},time:'40 мин',
@@ -480,7 +533,7 @@ const DISHES=[
     ]
   },
   {
-    id:'plov',cat:'main',emoji:'🍚',
+    id:'plov',methods:['Жарка','Варка'],diff:2,price:750,cat:'main',emoji:'🍚',
     name:'Плов с курицей',
     desc:'Упрощённый домашний плов на курином бедре с морковью, луком и чесноком.',
     kbju:{k:590,b:30,zh:22,u:66},time:'55 мин',
@@ -502,6 +555,7 @@ const DISHES=[
 let prefs=['Курица','Творог'];          // предпочтения (заглушки)
 let bans=[];                             // «не употребляю»
 let cat='main';                          // текущий раздел
+let method='all';                        // фильтр способа приготовления
 let cart={};                             // список покупок: имя -> {entries:[{qty,dish}]}
 let currentDish=null;
 
@@ -544,12 +598,28 @@ function setCat(c){
   document.querySelectorAll('.seg button').forEach(b=>b.classList.toggle('active',b.dataset.cat===c));
   renderGrid();
 }
+function setMethod(m){
+  method=m;
+  document.querySelectorAll('.filters button').forEach(b=>b.classList.toggle('active',b.dataset.m===m));
+  renderGrid();
+}
+function stars(n){
+  return '<span class="stars">'+'★'.repeat(n)+'<span class="off">'+'★'.repeat(3-n)+'</span></span>';
+}
+function tagsHtml(d){
+  return d.methods.map(m=>`<span class="tag">${m}</span>`).join('')
+    +`<span class="tag">⏱ ${d.time}</span>`
+    +`<span class="tag">Сложность ${stars(d.diff)}</span>`;
+}
 function renderGrid(){
   const g=document.getElementById('grid');
-  const list=DISHES.filter(d=>d.cat===cat&&!isBanned(d));
-  const hidden=DISHES.filter(d=>d.cat===cat&&isBanned(d)).length;
+  const matchM=d=>method==='all'||d.methods.includes(method);
+  const list=DISHES.filter(d=>d.cat===cat&&matchM(d)&&!isBanned(d));
+  const hidden=DISHES.filter(d=>d.cat===cat&&matchM(d)&&isBanned(d)).length;
   if(!list.length){
-    g.innerHTML=`<div class="empty" style="grid-column:1/-1">Все блюда этого раздела скрыты из-за исключённых продуктов.<br>Убери что-нибудь из списка «Не употребляю».</div>`;
+    g.innerHTML=`<div class="empty" style="grid-column:1/-1">${method==='all'
+      ?'Все блюда этого раздела скрыты из-за исключённых продуктов.<br>Убери что-нибудь из списка «Не употребляю».'
+      :'В этом разделе пока нет блюд со способом «'+method+'».<br>Выбери другой фильтр или «Все».'}</div>`;
     return;
   }
   g.innerHTML=list.map(d=>`
@@ -558,7 +628,8 @@ function renderGrid(){
       <div class="dish-body">
         <div class="dish-name">${d.name}</div>
         <div class="dish-desc">${d.desc}</div>
-        <div class="dish-meta"><span class="kcal">${d.kbju.k} ккал</span><span>⏱ ${d.time}</span></div>
+        <div class="tags">${tagsHtml(d)}</div>
+        <div class="dish-meta"><span class="kcal">${d.kbju.k} ккал</span><span>заказ ≈${d.price.toLocaleString('ru-RU')} ₽</span></div>
       </div>
     </button>`).join('')
     +(hidden?`<div class="empty" style="grid-column:1/-1;padding:8px">Скрыто блюд из-за исключений: ${hidden}</div>`:'');
@@ -575,6 +646,8 @@ function openDish(id){
   tag.className='cat-tag '+(d.cat==='breakfast'?'b':'m');
   document.getElementById('d-name').textContent=d.name;
   document.getElementById('d-desc').textContent=d.desc;
+  document.getElementById('d-tags').innerHTML=tagsHtml(d);
+  document.getElementById('d-price').textContent='≈ '+d.price.toLocaleString('ru-RU')+' ₽';
   document.getElementById('d-kbju').innerHTML=`
     <div><b>${d.kbju.k}</b><span>ккал</span></div>
     <div><b>${d.kbju.b}</b><span>белки, г</span></div>
@@ -691,6 +764,7 @@ document.addEventListener('click',function(e){
   else if(a==='add-chip')addChip(el.dataset.type);
   else if(a==='remove-chip')removeChip(el.dataset.type,parseInt(el.dataset.index,10));
   else if(a==='cat')setCat(el.dataset.cat);
+  else if(a==='method')setMethod(el.dataset.m);
   else if(a==='open-dish')openDish(el.dataset.id);
   else if(a==='close-dish')closeDish();
   else if(a==='add-cart')addToCart();
