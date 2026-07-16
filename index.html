@@ -635,9 +635,9 @@ function renderCart(){
     return `<div class="r-item">
       <span class="n">${n}</span>
       <span class="q">${q}</span>
-      <a class="shop-btn p" title="Найти в Перекрёстке" target="_blank" rel="noopener"
+      <a class="shop-btn p" data-shop="p" data-query="${query}" title="Найти в Перекрёстке" target="_blank" rel="noopener"
          href="https://www.perekrestok.ru/cat/search?search=${query}">П</a>
-      <a class="shop-btn s" title="Найти в Самокате" target="_blank" rel="noopener"
+      <a class="shop-btn s" data-shop="s" data-query="${query}" title="Найти в Самокате" target="_blank" rel="noopener"
          href="https://samokat.ru/search?value=${query}">С</a>
     </div>`;
   }).join('');
@@ -696,6 +696,32 @@ document.addEventListener('click',function(e){
   else if(a==='add-cart')addToCart();
   else if(a==='copy-cart')copyCart();
   else if(a==='clear-cart')clearCart();
+});
+var IS_MOBILE=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+/* Схемы приложений — подобраны опытным путём, при необходимости скорректируем */
+var APP_SCHEMES={
+  s:function(q){return 'samokat://search?value='+q},
+  p:function(q){return 'perekrestok://search?text='+q}
+};
+function tryApp(scheme,webUrl){
+  var opened=false;
+  function onHide(){opened=true}
+  document.addEventListener('visibilitychange',onHide);
+  window.addEventListener('pagehide',onHide);
+  setTimeout(function(){
+    document.removeEventListener('visibilitychange',onHide);
+    window.removeEventListener('pagehide',onHide);
+    if(!opened&&document.visibilityState==='visible'){
+      window.location.href=webUrl; // приложение не открылось — идём на сайт
+    }
+  },1500);
+  window.location.href=scheme;
+}
+document.addEventListener('click',function(e){
+  var el=e.target.closest('.shop-btn[data-shop]');
+  if(!el||!IS_MOBILE)return;      // на ПК работает обычная ссылка
+  e.preventDefault();
+  tryApp(APP_SCHEMES[el.dataset.shop](el.dataset.query),el.href);
 });
 document.getElementById('overlay').addEventListener('click',function(e){
   if(e.target===this)closeDish();
