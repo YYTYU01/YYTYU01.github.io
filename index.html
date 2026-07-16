@@ -50,30 +50,48 @@
 
   .wrap{max-width:960px;margin:0 auto;padding:0 16px}
 
-  /* ---------- Предпочтения ---------- */
+  /* ---------- Предпочтения (модальная панель) ---------- */
+  .prefs-overlay{
+    position:fixed;inset:0;background:rgba(30,36,32,.45);z-index:55;
+    display:none;align-items:flex-end;justify-content:center;
+  }
+  .prefs-overlay.open{display:flex}
   .prefs{
-    background:var(--card);
-    border:1px solid var(--line);
-    border-radius:var(--radius);
-    margin-top:14px;
-    overflow:hidden;
+    background:var(--bg);width:100%;max-width:560px;max-height:88vh;
+    border-radius:20px 20px 0 0;overflow:hidden;display:flex;flex-direction:column;
+    position:relative;
+  }
+  @media(min-width:680px){
+    .prefs-overlay{align-items:center;padding:32px 16px}
+    .prefs{border-radius:20px;max-height:80vh}
   }
   .prefs-head{
-    width:100%;display:flex;align-items:center;justify-content:space-between;
-    padding:14px 16px;background:none;border:none;font-size:15px;font-weight:600;color:var(--ink);
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:18px 20px;background:var(--card);border-bottom:1px solid var(--line);flex:none;
   }
-  .prefs-head .arrow{transition:transform .2s;color:var(--ink-soft)}
-  .prefs.open .arrow{transform:rotate(180deg)}
-  .prefs-body{display:none;padding:0 16px 16px;border-top:1px solid var(--line)}
-  .prefs.open .prefs-body{display:block}
-  .prefs-group{margin-top:14px}
-  .prefs-label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin-bottom:8px}
+  .prefs-head h2{font-size:16px;font-weight:700}
+  .prefs-head .close-btn{position:static;box-shadow:none;background:var(--bg)}
+  .prefs-body{padding:16px 20px 24px;overflow-y:auto}
+  .prefs-intro{font-size:13px;color:var(--ink-soft);line-height:1.5;margin-bottom:16px}
+  .prefs-group{margin-top:18px}
+  .prefs-group:first-child{margin-top:0}
+  .prefs-label{
+    display:flex;align-items:center;gap:7px;
+    font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin-bottom:8px;
+  }
+  .prefs-label .sw{width:9px;height:9px;border-radius:50%;flex:none}
+  .sw.love{background:#C8207E}
+  .sw.eat{background:var(--green)}
+  .sw.rare{background:var(--yolk)}
+  .sw.never{background:var(--red)}
   .chips{display:flex;flex-wrap:wrap;gap:8px}
   .chip{
     display:inline-flex;align-items:center;gap:6px;
     padding:6px 10px;border-radius:999px;font-size:13px;font-weight:500;
     background:var(--green-soft);color:var(--green);border:none;
   }
+  .chip.love{background:#FBE1EE;color:#C8207E}
+  .chip.rare{background:var(--yolk-soft);color:#8A6210}
   .chip.banned{background:#F7E3DC;color:var(--red)}
   .chip .x{font-weight:700;opacity:.6;background:none;border:none;color:inherit;font-size:14px;line-height:1;padding:0 0 0 2px}
   .chip .x:hover{opacity:1}
@@ -86,7 +104,8 @@
   .chip-add button{
     padding:8px 14px;border-radius:10px;border:none;background:var(--ink);color:#fff;font-size:14px;font-weight:500;
   }
-  .prefs-note{font-size:12px;color:var(--ink-soft);margin-top:12px;line-height:1.5}
+  .prefs-note{font-size:12px;color:var(--ink-soft);margin-top:18px;line-height:1.5;padding-top:14px;border-top:1px dashed var(--line)}
+
 
   /* ---------- Переключатель разделов ---------- */
   .seg{
@@ -111,6 +130,21 @@
     background:var(--card);font-size:13px;font-weight:500;color:var(--ink-soft);
   }
   .filters button.active{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+  /* ---------- Сортировка по простоте ---------- */
+  .sort-bar{
+    display:flex;align-items:center;gap:10px;margin:0 0 14px;flex-wrap:wrap;
+  }
+  .sort-label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft)}
+  .sort-select{
+    display:flex;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px;
+  }
+  .sort-select button{
+    padding:7px 12px;border:none;border-radius:999px;background:none;font-size:13px;font-weight:500;color:var(--ink-soft);
+    display:flex;align-items:center;gap:5px;white-space:nowrap;
+  }
+  .sort-select button.active{background:var(--ink);color:#fff}
+  .sort-select button .arrow-ind{font-size:10px;opacity:.8}
 
   /* ---------- Теги на карточках ---------- */
   .tags{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
@@ -215,11 +249,18 @@
     background:var(--ink);color:#fff;font-family:var(--font-mono);font-size:13px;
     display:flex;align-items:center;justify-content:center;margin-top:-1px;
   }
+  .add-cart-row{display:flex;gap:8px;margin-top:20px}
   .add-cart{
-    width:100%;margin-top:20px;padding:15px;border:none;border-radius:14px;
+    flex:1;padding:15px;border:none;border-radius:14px;
     background:var(--green);color:#fff;font-size:15px;font-weight:600;
   }
   .add-cart:disabled{background:var(--ink-soft)}
+  .go-cart-btn{
+    flex:none;width:52px;padding:15px 0;border:none;border-radius:14px;
+    background:var(--ink);color:#fff;font-size:19px;display:flex;align-items:center;justify-content:center;
+    transform:scale(.9);opacity:0;pointer-events:none;transition:transform .2s,opacity .2s;
+  }
+  .go-cart-btn.show{transform:scale(1);opacity:1;pointer-events:auto}
 
   /* ---------- Список покупок («чек») ---------- */
   .receipt{
@@ -270,6 +311,12 @@
   }
   nav button .ico{font-size:18px}
   nav button.active{background:var(--green-soft);color:var(--green)}
+  nav .nav-sep{width:1px;background:var(--line);margin:4px 2px;flex:none}
+  .nav-prefs-btn{
+    flex:none!important;padding:10px 14px!important;
+    position:relative;max-width:none!important;font-size:13px;
+  }
+  .nav-prefs-btn.active{background:var(--green-soft);color:var(--green)}
   .badge[hidden]{display:none}
   .badge{
     position:absolute;transform:translate(14px,-4px);
@@ -294,6 +341,9 @@
 
 <nav>
   <button id="nav-menu" class="active" data-action="page" data-page="menu"><span class="ico">🍽</span>Меню</button>
+  <button class="nav-prefs-btn" id="nav-prefs" data-action="toggle-prefs" aria-label="Мои предпочтения по еде" title="Мои предпочтения по еде">
+    Вкус
+  </button>
   <button id="nav-cart" data-action="page" data-page="cart" style="position:relative">
     <span class="ico">🧾</span>Список<span class="badge" id="cart-badge" hidden>0</span>
   </button>
@@ -307,31 +357,6 @@
 <!-- ================= МЕНЮ ================= -->
 <main class="wrap" id="page-menu">
 
-  <div class="prefs" id="prefs">
-    <button class="prefs-head" data-action="toggle-prefs">
-      Предпочтения и исключения <span class="arrow">▾</span>
-    </button>
-    <div class="prefs-body">
-      <div class="prefs-group">
-        <div class="prefs-label">Предпочитаю</div>
-        <div class="chips" id="prefs-chips"></div>
-        <div class="chip-add">
-          <input id="pref-input" placeholder="Например: курица" aria-label="Добавить предпочтение">
-          <button data-action="add-chip" data-type="pref">Добавить</button>
-        </div>
-      </div>
-      <div class="prefs-group">
-        <div class="prefs-label">Не употребляю</div>
-        <div class="chips" id="ban-chips"></div>
-        <div class="chip-add">
-          <input id="ban-input" placeholder="Например: грибы" aria-label="Добавить исключение">
-          <button data-action="add-chip" data-type="ban">Добавить</button>
-        </div>
-      </div>
-      <div class="prefs-note">Блюда, в составе которых есть продукт из списка «Не употребляю», автоматически скрываются из меню. Предпочтения пока просто помечают блюда — позже добавим сортировку по ним.</div>
-    </div>
-  </div>
-
   <div class="seg" role="tablist">
     <button data-cat="breakfast" data-action="cat">🍳 Завтрак</button>
     <button data-cat="main" class="active" data-action="cat">🍲 Основной приём</button>
@@ -344,6 +369,15 @@
     <button data-action="method" data-m="Жарка">Жарка</button>
     <button data-action="method" data-m="Варка">Варка</button>
     <button data-action="method" data-m="Без готовки">Без готовки</button>
+  </div>
+
+  <div class="sort-bar">
+    <span class="sort-label">Сортировка</span>
+    <div class="sort-select" id="sort-select">
+      <button class="active" data-action="sort" data-s="default">По умолчанию</button>
+      <button data-action="sort" data-s="easiest">Сначала простые<span class="arrow-ind">▾</span></button>
+      <button data-action="sort" data-s="fastest">Сначала быстрые<span class="arrow-ind">▾</span></button>
+    </div>
   </div>
 
   <div class="grid" id="grid"></div>
@@ -365,6 +399,57 @@
   <div class="legend">П — поиск товара в Перекрёстке · С — поиск товара в Самокате</div>
 </main>
 
+<!-- ================= ПРЕДПОЧТЕНИЯ (ОВЕРЛЕЙ) ================= -->
+<div class="prefs-overlay" id="prefs-overlay">
+  <div class="prefs" role="dialog" aria-modal="true" aria-label="Мои предпочтения по еде">
+    <div class="prefs-head">
+      <h2>Мои предпочтения по еде</h2>
+      <button class="close-btn" data-action="toggle-prefs" aria-label="Закрыть">✕</button>
+    </div>
+    <div class="prefs-body">
+      <div class="prefs-intro">Отметь, что и как часто ты ешь. Пока это просто справочный список — на его основе позже соберём готовое меню под тебя.</div>
+
+      <div class="prefs-group">
+        <div class="prefs-label"><span class="sw love"></span>Люблю</div>
+        <div class="chips" id="love-chips"></div>
+        <div class="chip-add">
+          <input id="love-input" placeholder="Например: курица" aria-label="Добавить в «Люблю»">
+          <button data-action="add-chip" data-type="love">Добавить</button>
+        </div>
+      </div>
+
+      <div class="prefs-group">
+        <div class="prefs-label"><span class="sw eat"></span>Ем</div>
+        <div class="chips" id="eat-chips"></div>
+        <div class="chip-add">
+          <input id="eat-input" placeholder="Например: рис" aria-label="Добавить в «Ем»">
+          <button data-action="add-chip" data-type="eat">Добавить</button>
+        </div>
+      </div>
+
+      <div class="prefs-group">
+        <div class="prefs-label"><span class="sw rare"></span>Ем в редких случаях</div>
+        <div class="chips" id="rare-chips"></div>
+        <div class="chip-add">
+          <input id="rare-input" placeholder="Например: свинина" aria-label="Добавить в «Ем в редких случаях»">
+          <button data-action="add-chip" data-type="rare">Добавить</button>
+        </div>
+      </div>
+
+      <div class="prefs-group">
+        <div class="prefs-label"><span class="sw never"></span>Не ем вообще</div>
+        <div class="chips" id="ban-chips"></div>
+        <div class="chip-add">
+          <input id="ban-input" placeholder="Например: грибы" aria-label="Добавить в «Не ем вообще»">
+          <button data-action="add-chip" data-type="ban">Добавить</button>
+        </div>
+      </div>
+
+      <div class="prefs-note">Блюда, в составе которых есть продукт из списка «Не ем вообще», автоматически скрываются из меню. Остальные группы пока информативные — по ним позже соберём персональное меню.</div>
+    </div>
+  </div>
+</div>
+
 <!-- ================= СТРАНИЦА БЛЮДА ================= -->
 <div class="overlay" id="overlay">
   <div class="sheet" role="dialog" aria-modal="true">
@@ -381,7 +466,10 @@
       <ul class="ing-list" id="d-ings"></ul>
       <h3>Как приготовить</h3>
       <ol class="steps" id="d-steps"></ol>
-      <button class="add-cart" id="d-add" data-action="add-cart">Добавить продукты в список покупок</button>
+      <div class="add-cart-row">
+        <button class="add-cart" id="d-add" data-action="add-cart">Добавить продукты в список покупок</button>
+        <button class="go-cart-btn" id="d-go-cart" data-action="go-cart" aria-label="Перейти к списку покупок" title="Перейти к списку покупок">🧾</button>
+      </div>
     </div>
   </div>
 </div>
@@ -552,43 +640,49 @@ const DISHES=[
 ];
 
 /* ================= СОСТОЯНИЕ ================= */
-let prefs=['Курица','Творог'];          // предпочтения (заглушки)
-let bans=[];                             // «не употребляю»
+const prefGroups={                       // 4 группы предпочтений по еде
+  love:['Курица'],                       // люблю
+  eat:['Творог'],                        // ем
+  rare:[],                               // ем в редких случаях
+  ban:[]                                 // не ем вообще
+};
 let cat='main';                          // текущий раздел
 let method='all';                        // фильтр способа приготовления
+let sort='default';                      // сортировка: default | easiest | fastest
 let cart={};                             // список покупок: имя -> {entries:[{qty,dish}]}
 let currentDish=null;
 
 /* ================= ПРЕДПОЧТЕНИЯ ================= */
+const PREF_EMPTY_TEXT={
+  love:'Пока пусто',eat:'Пока пусто',rare:'Пока пусто',
+  ban:'Пока пусто — все блюда показаны'
+};
 function renderChips(){
-  const p=document.getElementById('prefs-chips');
-  p.innerHTML=prefs.length?'':'<span style="font-size:13px;color:var(--ink-soft)">Пока пусто</span>';
-  prefs.forEach((c,i)=>{
-    p.insertAdjacentHTML('beforeend',
-      `<span class="chip">${esc(c)}<button class="x" aria-label="Убрать ${esc(c)}" data-action="remove-chip" data-type="pref" data-index="${i}">✕</button></span>`);
-  });
-  const b=document.getElementById('ban-chips');
-  b.innerHTML=bans.length?'':'<span style="font-size:13px;color:var(--ink-soft)">Пока пусто — все блюда показаны</span>';
-  bans.forEach((c,i)=>{
-    b.insertAdjacentHTML('beforeend',
-      `<span class="chip banned">${esc(c)}<button class="x" aria-label="Убрать ${esc(c)}" data-action="remove-chip" data-type="ban" data-index="${i}">✕</button></span>`);
+  Object.keys(prefGroups).forEach(type=>{
+    const box=document.getElementById(type+'-chips');
+    const list=prefGroups[type];
+    box.innerHTML=list.length?'':`<span style="font-size:13px;color:var(--ink-soft)">${PREF_EMPTY_TEXT[type]}</span>`;
+    list.forEach((c,i)=>{
+      box.insertAdjacentHTML('beforeend',
+        `<span class="chip ${type}">${esc(c)}<button class="x" aria-label="Убрать ${esc(c)}" data-action="remove-chip" data-type="${type}" data-index="${i}">✕</button></span>`);
+    });
   });
 }
 function addChip(type){
-  const input=document.getElementById(type==='pref'?'pref-input':'ban-input');
+  const input=document.getElementById(type+'-input');
   const v=input.value.trim();
   if(!v)return;
-  (type==='pref'?prefs:bans).push(v);
+  prefGroups[type].push(v);
   input.value='';
   renderChips();renderGrid();
   if(type==='ban')toast(`«${v}» исключено — меню обновлено`);
 }
 function removeChip(type,i){
-  (type==='pref'?prefs:bans).splice(i,1);
+  prefGroups[type].splice(i,1);
   renderChips();renderGrid();
 }
 function isBanned(dish){
-  return bans.some(b=>dish.ings.some(([n])=>n.toLowerCase().includes(b.toLowerCase()))
+  return prefGroups.ban.some(b=>dish.ings.some(([n])=>n.toLowerCase().includes(b.toLowerCase()))
     ||dish.name.toLowerCase().includes(b.toLowerCase()));
 }
 
@@ -603,6 +697,20 @@ function setMethod(m){
   document.querySelectorAll('.filters button').forEach(b=>b.classList.toggle('active',b.dataset.m===m));
   renderGrid();
 }
+function setSort(s){
+  sort=s;
+  document.querySelectorAll('.sort-select button').forEach(b=>b.classList.toggle('active',b.dataset.s===s));
+  renderGrid();
+}
+function timeToMin(t){
+  // разбирает строки вида "15 мин" или "1 ч 20 мин" в общее число минут
+  let min=0;
+  const h=t.match(/(\d+)\s*ч/);
+  const m=t.match(/(\d+)\s*мин/);
+  if(h)min+=parseInt(h[1],10)*60;
+  if(m)min+=parseInt(m[1],10);
+  return min;
+}
 function stars(n){
   return '<span class="stars">'+'★'.repeat(n)+'<span class="off">'+'★'.repeat(3-n)+'</span></span>';
 }
@@ -616,6 +724,13 @@ function renderGrid(){
   const matchM=d=>method==='all'||d.methods.includes(method);
   const list=DISHES.filter(d=>d.cat===cat&&matchM(d)&&!isBanned(d));
   const hidden=DISHES.filter(d=>d.cat===cat&&matchM(d)&&isBanned(d)).length;
+  if(sort==='easiest'){
+    // сначала простота (меньше звёзд), при равенстве — меньше времени
+    list.sort((a,b)=>(a.diff-b.diff)||(timeToMin(a.time)-timeToMin(b.time)));
+  }else if(sort==='fastest'){
+    // сначала время, при равенстве — простота
+    list.sort((a,b)=>(timeToMin(a.time)-timeToMin(b.time))||(a.diff-b.diff));
+  }
   if(!list.length){
     g.innerHTML=`<div class="empty" style="grid-column:1/-1">${method==='all'
       ?'Все блюда этого раздела скрыты из-за исключённых продуктов.<br>Убери что-нибудь из списка «Не употребляю».'
@@ -659,6 +774,7 @@ function openDish(id){
     d.steps.map(s=>`<li>${s}</li>`).join('');
   const btn=document.getElementById('d-add');
   btn.disabled=false;btn.textContent='Добавить продукты в список покупок';
+  document.getElementById('d-go-cart').classList.remove('show');
   document.getElementById('overlay').classList.add('open');
   document.body.style.overflow='hidden';
 }
@@ -676,8 +792,13 @@ function addToCart(){
   });
   const btn=document.getElementById('d-add');
   btn.disabled=true;btn.textContent='Добавлено ✓';
+  document.getElementById('d-go-cart').classList.add('show');
   updateBadge();renderCart();
   toast('Продукты добавлены в список');
+}
+function goToCart(){
+  closeDish();
+  showPage('cart');
 }
 function mergeQty(entries){
   // если все количества в одной единице и начинаются с числа — суммируем
@@ -760,25 +881,41 @@ document.addEventListener('click',function(e){
   if(!el)return;
   var a=el.dataset.action;
   if(a==='page')showPage(el.dataset.page);
-  else if(a==='toggle-prefs')document.getElementById('prefs').classList.toggle('open');
+  else if(a==='toggle-prefs')togglePrefsOverlay();
   else if(a==='add-chip')addChip(el.dataset.type);
   else if(a==='remove-chip')removeChip(el.dataset.type,parseInt(el.dataset.index,10));
   else if(a==='cat')setCat(el.dataset.cat);
   else if(a==='method')setMethod(el.dataset.m);
+  else if(a==='sort')setSort(el.dataset.s);
   else if(a==='open-dish')openDish(el.dataset.id);
   else if(a==='close-dish')closeDish();
   else if(a==='add-cart')addToCart();
+  else if(a==='go-cart')goToCart();
   else if(a==='copy-cart')copyCart();
   else if(a==='clear-cart')clearCart();
 });
 document.getElementById('overlay').addEventListener('click',function(e){
   if(e.target===this)closeDish();
 });
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDish()});
+document.getElementById('prefs-overlay').addEventListener('click',function(e){
+  if(e.target===this)togglePrefsOverlay(false);
+});
+function togglePrefsOverlay(force){
+  const ov=document.getElementById('prefs-overlay');
+  const open=typeof force==='boolean'?force:!ov.classList.contains('open');
+  ov.classList.toggle('open',open);
+  document.getElementById('nav-prefs').classList.toggle('active',open);
+  document.body.style.overflow=open?'hidden':'';
+}
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape')return;
+  closeDish();
+  togglePrefsOverlay(false);
+});
 
-['pref-input','ban-input'].forEach(id=>{
+['love-input','eat-input','rare-input','ban-input'].forEach(id=>{
   document.getElementById(id).addEventListener('keydown',e=>{
-    if(e.key==='Enter')addChip(id==='pref-input'?'pref':'ban');
+    if(e.key==='Enter')addChip(id.replace('-input',''));
   });
 });
 
