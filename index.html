@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Домашнее меню</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Unbounded:wght@500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F2F4EF;
+    --card:#FFFFFF;
+    --ink:#1E2420;
+    --ink-soft:#5B655D;
+    --line:#DDE3DA;
+    --green:#2E6B34;       /* основной приём */
+    --green-soft:#E4EFE2;
+    --yolk:#E3A72F;        /* завтрак */
+    --yolk-soft:#FBF0D8;
+    --red:#C8471F;
+    --radius:16px;
+    --font-body:'Golos Text',system-ui,sans-serif;
+    --font-display:'Unbounded',sans-serif;
+    --font-mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:var(--font-body);
+    background:var(--bg);
+    color:var(--ink);
+    min-height:100vh;
+    padding-bottom:84px; /* место под нижнюю навигацию на телефоне */
+  }
+  a{color:inherit}
+  button{font-family:inherit;cursor:pointer}
+
+  /* ---------- Шапка ---------- */
+  header{
+    padding:20px 16px 8px;
+    max-width:960px;margin:0 auto;
+  }
+  .logo{
+    font-family:var(--font-display);
+    font-weight:700;font-size:20px;letter-spacing:-0.5px;
+  }
+  .logo span{color:var(--green)}
+  .tagline{color:var(--ink-soft);font-size:13px;margin-top:4px}
+
+  .wrap{max-width:960px;margin:0 auto;padding:0 16px}
+
+  /* ---------- Предпочтения ---------- */
+  .prefs{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    margin-top:14px;
+    overflow:hidden;
+  }
+  .prefs-head{
+    width:100%;display:flex;align-items:center;justify-content:space-between;
+    padding:14px 16px;background:none;border:none;font-size:15px;font-weight:600;color:var(--ink);
+  }
+  .prefs-head .arrow{transition:transform .2s;color:var(--ink-soft)}
+  .prefs.open .arrow{transform:rotate(180deg)}
+  .prefs-body{display:none;padding:0 16px 16px;border-top:1px solid var(--line)}
+  .prefs.open .prefs-body{display:block}
+  .prefs-group{margin-top:14px}
+  .prefs-label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);margin-bottom:8px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:6px 10px;border-radius:999px;font-size:13px;font-weight:500;
+    background:var(--green-soft);color:var(--green);border:none;
+  }
+  .chip.banned{background:#F7E3DC;color:var(--red)}
+  .chip .x{font-weight:700;opacity:.6;background:none;border:none;color:inherit;font-size:14px;line-height:1;padding:0 0 0 2px}
+  .chip .x:hover{opacity:1}
+  .chip-add{display:flex;gap:8px;margin-top:8px}
+  .chip-add input{
+    flex:1;min-width:0;padding:8px 12px;border:1px solid var(--line);border-radius:10px;
+    font-family:inherit;font-size:14px;background:var(--bg);color:var(--ink);
+  }
+  .chip-add input:focus{outline:2px solid var(--green);outline-offset:1px;border-color:transparent}
+  .chip-add button{
+    padding:8px 14px;border-radius:10px;border:none;background:var(--ink);color:#fff;font-size:14px;font-weight:500;
+  }
+  .prefs-note{font-size:12px;color:var(--ink-soft);margin-top:12px;line-height:1.5}
+
+  /* ---------- Переключатель разделов ---------- */
+  .seg{
+    display:flex;gap:6px;margin:18px 0 14px;
+    background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px;
+  }
+  .seg button{
+    flex:1;padding:10px 8px;border:none;border-radius:999px;background:none;
+    font-size:14px;font-weight:600;color:var(--ink-soft);
+  }
+  .seg button.active[data-cat="breakfast"]{background:var(--yolk-soft);color:#8A6210}
+  .seg button.active[data-cat="main"]{background:var(--green-soft);color:var(--green)}
+
+  /* ---------- Сетка карточек ---------- */
+  .grid{display:grid;grid-template-columns:1fr;gap:14px;margin-bottom:24px}
+  @media(min-width:600px){.grid{grid-template-columns:1fr 1fr}}
+  @media(min-width:900px){.grid{grid-template-columns:1fr 1fr 1fr}}
+
+  .dish-card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    overflow:hidden;text-align:left;padding:0;display:flex;flex-direction:column;
+    transition:transform .15s, box-shadow .15s;
+  }
+  .dish-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(30,36,32,.08)}
+  .dish-card:focus-visible{outline:3px solid var(--green);outline-offset:2px}
+  .photo{
+    height:150px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;
+    font-size:40px;color:var(--ink-soft);
+  }
+  .photo small{font-size:11px;text-transform:uppercase;letter-spacing:.08em;opacity:.7}
+  .photo.b{background:linear-gradient(135deg,#FBF0D8,#F6E2B8)}
+  .photo.m{background:linear-gradient(135deg,#E4EFE2,#CFE3CB)}
+  .dish-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:8px;flex:1}
+  .dish-name{font-size:16px;font-weight:700;line-height:1.3}
+  .dish-desc{font-size:13px;color:var(--ink-soft);line-height:1.45;flex:1}
+  .dish-meta{
+    display:flex;justify-content:space-between;align-items:center;
+    font-family:var(--font-mono);font-size:12px;color:var(--ink-soft);
+    border-top:1px dashed var(--line);padding-top:10px;
+  }
+  .kcal{font-weight:600;color:var(--ink)}
+  .empty{
+    text-align:center;color:var(--ink-soft);font-size:14px;padding:40px 16px;line-height:1.6;
+  }
+
+  /* ---------- Страница блюда (оверлей) ---------- */
+  .overlay{
+    position:fixed;inset:0;background:rgba(30,36,32,.45);z-index:50;
+    display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:0;
+  }
+  .overlay.open{display:flex}
+  .sheet{
+    background:var(--bg);width:100%;min-height:100vh;max-width:640px;position:relative;
+  }
+  @media(min-width:680px){
+    .overlay{padding:32px 16px}
+    .sheet{min-height:0;border-radius:20px;overflow:hidden}
+  }
+  .sheet .photo{height:220px;font-size:64px}
+  .close-btn{
+    position:absolute;top:14px;right:14px;width:38px;height:38px;border-radius:50%;
+    border:none;background:rgba(255,255,255,.9);font-size:18px;font-weight:700;color:var(--ink);
+    box-shadow:0 2px 8px rgba(0,0,0,.12);
+  }
+  .sheet-body{padding:20px 20px 32px}
+  .sheet h2{font-size:22px;font-weight:700;line-height:1.25;margin-bottom:6px}
+  .cat-tag{
+    display:inline-block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;
+    padding:4px 10px;border-radius:999px;margin-bottom:10px;
+  }
+  .cat-tag.b{background:var(--yolk-soft);color:#8A6210}
+  .cat-tag.m{background:var(--green-soft);color:var(--green)}
+  .sheet .dish-desc{font-size:14px;margin-bottom:16px}
+
+  .kbju{
+    display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:20px;
+  }
+  .kbju div{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:10px 6px;text-align:center;
+  }
+  .kbju b{display:block;font-family:var(--font-mono);font-size:16px}
+  .kbju span{font-size:11px;color:var(--ink-soft)}
+
+  .sheet h3{font-size:15px;font-weight:700;margin:20px 0 10px}
+  .ing-list{list-style:none}
+  .ing-list li{
+    display:flex;justify-content:space-between;gap:10px;padding:9px 0;
+    border-bottom:1px dashed var(--line);font-size:14px;
+  }
+  .ing-list .qty{font-family:var(--font-mono);font-size:13px;color:var(--ink-soft);white-space:nowrap}
+  .steps{list-style:none;counter-reset:step}
+  .steps li{
+    counter-increment:step;display:flex;gap:12px;padding:10px 0;font-size:14px;line-height:1.5;
+  }
+  .steps li::before{
+    content:counter(step);flex:none;width:26px;height:26px;border-radius:50%;
+    background:var(--ink);color:#fff;font-family:var(--font-mono);font-size:13px;
+    display:flex;align-items:center;justify-content:center;margin-top:-1px;
+  }
+  .add-cart{
+    width:100%;margin-top:20px;padding:15px;border:none;border-radius:14px;
+    background:var(--green);color:#fff;font-size:15px;font-weight:600;
+  }
+  .add-cart:disabled{background:var(--ink-soft)}
+
+  /* ---------- Список покупок («чек») ---------- */
+  .receipt{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    max-width:480px;margin:16px auto 24px;padding:22px 18px 26px;
+    font-family:var(--font-mono);position:relative;
+  }
+  .receipt::after{ /* «отрывной» край чека */
+    content:"";position:absolute;left:0;right:0;bottom:-1px;height:10px;
+    background:
+      linear-gradient(-45deg,transparent 70%,var(--card) 70%) 0 0/12px 10px repeat-x,
+      linear-gradient(45deg,transparent 70%,var(--card) 70%) 0 0/12px 10px repeat-x;
+  }
+  .receipt h2{
+    font-family:var(--font-mono);font-size:14px;text-align:center;letter-spacing:.1em;
+    text-transform:uppercase;margin-bottom:4px;
+  }
+  .receipt .sub{text-align:center;font-size:11px;color:var(--ink-soft);margin-bottom:14px}
+  .r-line{border:none;border-top:1px dashed var(--line);margin:10px 0}
+  .r-item{display:flex;align-items:center;gap:8px;padding:7px 0;font-size:13px}
+  .r-item .n{flex:1;line-height:1.35}
+  .r-item .q{color:var(--ink-soft);white-space:nowrap;font-size:12px}
+  .shop-btn{
+    flex:none;width:26px;height:26px;border-radius:8px;border:1px solid var(--line);
+    background:var(--bg);font-family:var(--font-mono);font-size:11px;font-weight:600;
+    display:flex;align-items:center;justify-content:center;text-decoration:none;color:var(--ink);
+  }
+  .shop-btn.p{color:#0E7A3B}
+  .shop-btn.s{color:#C8207E}
+  .r-dishes{font-size:11px;color:var(--ink-soft);margin-top:10px;line-height:1.6}
+  .r-actions{display:flex;gap:8px;margin-top:16px}
+  .r-actions button{
+    flex:1;padding:11px;border-radius:10px;border:1px solid var(--line);
+    background:var(--bg);font-size:13px;font-weight:500;font-family:var(--font-body);color:var(--ink);
+  }
+  .r-empty{text-align:center;color:var(--ink-soft);font-size:13px;padding:26px 0;line-height:1.7}
+  .legend{font-size:11px;color:var(--ink-soft);text-align:center;margin-top:12px;font-family:var(--font-body)}
+
+  /* ---------- Навигация ---------- */
+  nav{
+    position:fixed;bottom:0;left:0;right:0;z-index:40;
+    background:var(--card);border-top:1px solid var(--line);
+    display:flex;justify-content:center;gap:4px;padding:8px 16px calc(8px + env(safe-area-inset-bottom));
+  }
+  nav button{
+    flex:1;max-width:200px;padding:10px 6px;border:none;border-radius:12px;background:none;
+    font-size:13px;font-weight:600;color:var(--ink-soft);display:flex;flex-direction:column;align-items:center;gap:3px;
+  }
+  nav button .ico{font-size:18px}
+  nav button.active{background:var(--green-soft);color:var(--green)}
+  .badge[hidden]{display:none}
+  .badge{
+    position:absolute;transform:translate(14px,-4px);
+    background:var(--red);color:#fff;font-size:10px;font-weight:700;
+    min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;
+  }
+  @media(min-width:900px){
+    body{padding-bottom:24px}
+    nav{position:sticky;top:0;bottom:auto;border-top:none;border-bottom:1px solid var(--line);justify-content:flex-end;max-width:none}
+    nav button{flex:none;flex-direction:row;gap:8px;padding:8px 16px}
+  }
+  .toast{
+    position:fixed;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:#fff;font-size:13px;padding:10px 18px;border-radius:999px;
+    opacity:0;pointer-events:none;transition:.25s;z-index:60;white-space:nowrap;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<nav>
+  <button id="nav-menu" class="active" data-action="page" data-page="menu"><span class="ico">🍽</span>Меню</button>
+  <button id="nav-cart" data-action="page" data-page="cart" style="position:relative">
+    <span class="ico">🧾</span>Список<span class="badge" id="cart-badge" hidden>0</span>
+  </button>
+</nav>
+
+<header>
+  <div class="logo">Домашнее <span>меню</span></div>
+  <div class="tagline">Подборки блюд из продуктов Перекрёстка и Самоката · Курск</div>
+</header>
+
+<!-- ================= МЕНЮ ================= -->
+<main class="wrap" id="page-menu">
+
+  <div class="prefs" id="prefs">
+    <button class="prefs-head" data-action="toggle-prefs">
+      Предпочтения и исключения <span class="arrow">▾</span>
+    </button>
+    <div class="prefs-body">
+      <div class="prefs-group">
+        <div class="prefs-label">Предпочитаю</div>
+        <div class="chips" id="prefs-chips"></div>
+        <div class="chip-add">
+          <input id="pref-input" placeholder="Например: курица" aria-label="Добавить предпочтение">
+          <button data-action="add-chip" data-type="pref">Добавить</button>
+        </div>
+      </div>
+      <div class="prefs-group">
+        <div class="prefs-label">Не употребляю</div>
+        <div class="chips" id="ban-chips"></div>
+        <div class="chip-add">
+          <input id="ban-input" placeholder="Например: грибы" aria-label="Добавить исключение">
+          <button data-action="add-chip" data-type="ban">Добавить</button>
+        </div>
+      </div>
+      <div class="prefs-note">Блюда, в составе которых есть продукт из списка «Не употребляю», автоматически скрываются из меню. Предпочтения пока просто помечают блюда — позже добавим сортировку по ним.</div>
+    </div>
+  </div>
+
+  <div class="seg" role="tablist">
+    <button data-cat="breakfast" data-action="cat">🍳 Завтрак</button>
+    <button data-cat="main" class="active" data-action="cat">🍲 Основной приём</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+</main>
+
+<!-- ================= СПИСОК ПОКУПОК ================= -->
+<main class="wrap" id="page-cart" hidden>
+  <div class="receipt">
+    <h2>Список покупок</h2>
+    <div class="sub">Перекрёсток · пр-кт Хрущёва, 2 &nbsp;/&nbsp; Самокат</div>
+    <hr class="r-line">
+    <div id="cart-items"></div>
+    <div id="cart-dishes" class="r-dishes"></div>
+    <div class="r-actions" id="cart-actions" hidden>
+      <button data-action="copy-cart">Скопировать список</button>
+      <button data-action="clear-cart">Очистить</button>
+    </div>
+  </div>
+  <div class="legend">П — поиск товара в Перекрёстке · С — поиск товара в Самокате</div>
+</main>
+
+<!-- ================= СТРАНИЦА БЛЮДА ================= -->
+<div class="overlay" id="overlay">
+  <div class="sheet" role="dialog" aria-modal="true">
+    <button class="close-btn" data-action="close-dish" aria-label="Закрыть">✕</button>
+    <div class="photo" id="d-photo"></div>
+    <div class="sheet-body">
+      <span class="cat-tag" id="d-tag"></span>
+      <h2 id="d-name"></h2>
+      <p class="dish-desc" id="d-desc"></p>
+      <div class="kbju" id="d-kbju"></div>
+      <h3>Состав</h3>
+      <ul class="ing-list" id="d-ings"></ul>
+      <h3>Как приготовить</h3>
+      <ol class="steps" id="d-steps"></ol>
+      <button class="add-cart" id="d-add" data-action="add-cart">Добавить продукты в список покупок</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+window.addEventListener('error',function(e){
+  var b=document.createElement('div');
+  b.style.cssText='position:fixed;top:0;left:0;right:0;background:#C8471F;color:#fff;font:12px/1.4 monospace;padding:8px 12px;z-index:9999';
+  b.textContent='Ошибка скрипта: '+(e.message||'неизвестная');
+  document.body.appendChild(b);
+});
+</script>
+<script>
+/* ================= ДАННЫЕ (заглушки) =================
+   Каждое блюдо: категория, название, описание, КБЖУ на порцию,
+   время, состав (название + количество), шаги.
+   Позже заменим на реальные подборки из твоих продуктов. */
+const DISHES=[
+  {
+    id:'oatmeal',cat:'breakfast',emoji:'🥣',
+    name:'Овсяная каша с бананом и мёдом',
+    desc:'Тёплая каша на молоке, сверху банан, мёд и немного грецких орехов. Заглушка описания — здесь будет пара предложений о блюде.',
+    kbju:{k:410,b:12,zh:11,u:66},time:'15 мин',
+    ings:[
+      ['Овсяные хлопья','60 г'],['Молоко 2,5%','250 мл'],['Банан','1 шт'],
+      ['Мёд','1 ч. л.'],['Грецкие орехи','15 г'],['Соль','щепотка']
+    ],
+    steps:[
+      'Довести молоко до кипения, всыпать хлопья и щепотку соли.',
+      'Варить 5–7 минут на слабом огне, помешивая.',
+      'Переложить в тарелку, добавить нарезанный банан, мёд и орехи.'
+    ]
+  },
+  {
+    id:'syrniki',cat:'breakfast',emoji:'🥞',
+    name:'Сырники со сметаной',
+    desc:'Классические сырники из творога 5%, обжаренные до золотистой корочки. Подаются со сметаной или вареньем.',
+    kbju:{k:380,b:24,zh:16,u:32},time:'25 мин',
+    ings:[
+      ['Творог 5%','250 г'],['Яйцо куриное','1 шт'],['Мука пшеничная','40 г'],
+      ['Сахар','1 ст. л.'],['Сметана 15%','50 г'],['Масло растительное','1 ст. л.']
+    ],
+    steps:[
+      'Смешать творог, яйцо, сахар и половину муки до однородности.',
+      'Сформировать сырники, обвалять в оставшейся муке.',
+      'Обжарить по 3–4 минуты с каждой стороны на среднем огне.',
+      'Подавать со сметаной.'
+    ]
+  },
+  {
+    id:'omelet',cat:'breakfast',emoji:'🍳',
+    name:'Омлет с овощами и сыром',
+    desc:'Пышный омлет с помидором, болгарским перцем и тёртым сыром. Быстрый сытный завтрак.',
+    kbju:{k:340,b:22,zh:24,u:8},time:'15 мин',
+    ings:[
+      ['Яйцо куриное','3 шт'],['Молоко 2,5%','50 мл'],['Помидор','1 шт'],
+      ['Перец болгарский','0,5 шт'],['Сыр полутвёрдый','30 г'],['Масло сливочное','10 г']
+    ],
+    steps:[
+      'Взбить яйца с молоком и щепоткой соли.',
+      'Обжарить нарезанные овощи 2–3 минуты на сливочном масле.',
+      'Залить овощи яичной смесью, накрыть крышкой, готовить 5 минут.',
+      'Посыпать сыром и дать ему расплавиться под крышкой.'
+    ]
+  },
+  {
+    id:'puree-kotlety',cat:'main',emoji:'🍗',
+    name:'Картофельное пюре с куриными котлетами и овощным салатом',
+    desc:'Тот самый пример: нежное пюре на молоке и масле, сочные котлеты из куриного фарша и свежий салат из огурцов и помидоров.',
+    kbju:{k:620,b:38,zh:24,u:60},time:'50 мин',
+    ings:[
+      ['Картофель','400 г'],['Молоко 2,5%','100 мл'],['Масло сливочное','20 г'],
+      ['Фарш куриный','300 г'],['Лук репчатый','1 шт'],['Яйцо куриное','1 шт'],
+      ['Панировочные сухари','30 г'],['Огурцы','150 г'],['Помидоры','150 г'],
+      ['Масло растительное','2 ст. л.']
+    ],
+    steps:[
+      'Поставить картофель вариться в подсоленной воде (20–25 минут).',
+      'Смешать фарш с мелко нарезанным луком, яйцом и сухарями, посолить.',
+      'Сформировать котлеты и обжарить по 5–6 минут с каждой стороны до готовности.',
+      'Размять картофель с горячим молоком и сливочным маслом.',
+      'Нарезать огурцы и помидоры, заправить маслом, посолить.'
+    ]
+  },
+  {
+    id:'grechka',cat:'main',emoji:'🥩',
+    name:'Гречка с тушёной говядиной',
+    desc:'Рассыпчатая гречка и говядина, тушённая с луком и морковью до мягкости. Домашняя классика.',
+    kbju:{k:560,b:34,zh:20,u:58},time:'1 ч 20 мин',
+    ings:[
+      ['Гречка','100 г'],['Говядина (лопатка)','300 г'],['Лук репчатый','1 шт'],
+      ['Морковь','1 шт'],['Томатная паста','1 ст. л.'],['Масло растительное','2 ст. л.'],
+      ['Лавровый лист','1 шт']
+    ],
+    steps:[
+      'Нарезать говядину кубиками, обжарить до корочки.',
+      'Добавить лук и морковь, жарить 5 минут.',
+      'Добавить томатную пасту, воду, лавровый лист. Тушить 60 минут под крышкой.',
+      'Отварить гречку (1 часть крупы на 2 части воды, 15 минут).',
+      'Подавать гречку с мясом и подливой.'
+    ]
+  },
+  {
+    id:'pasta-chicken',cat:'main',emoji:'🍝',
+    name:'Паста с курицей в сливочном соусе',
+    desc:'Пенне с кусочками куриного филе в сливочном соусе с чесноком и сыром.',
+    kbju:{k:640,b:36,zh:26,u:62},time:'30 мин',
+    ings:[
+      ['Паста (пенне)','100 г'],['Филе куриное','250 г'],['Сливки 20%','150 мл'],
+      ['Сыр полутвёрдый','40 г'],['Чеснок','2 зубчика'],['Масло растительное','1 ст. л.']
+    ],
+    steps:[
+      'Отварить пасту до состояния аль денте.',
+      'Обжарить нарезанное филе до золотистости, добавить чеснок.',
+      'Влить сливки, добавить половину сыра, прогреть 3–4 минуты.',
+      'Смешать соус с пастой, посыпать оставшимся сыром.'
+    ]
+  },
+  {
+    id:'fish-rice',cat:'main',emoji:'🐟',
+    name:'Запечённая рыба с рисом и брокколи',
+    desc:'Филе минтая или трески, запечённое с лимоном, гарнир из риса и брокколи на пару.',
+    kbju:{k:480,b:40,zh:10,u:56},time:'40 мин',
+    ings:[
+      ['Филе минтая','300 г'],['Рис','100 г'],['Брокколи','200 г'],
+      ['Лимон','0,5 шт'],['Масло растительное','1 ст. л.'],['Специи для рыбы','по вкусу']
+    ],
+    steps:[
+      'Натереть рыбу специями, сбрызнуть лимоном и маслом.',
+      'Запекать при 180°C 20–25 минут.',
+      'Отварить рис (12–15 минут) и брокколи (5–7 минут).',
+      'Подавать рыбу с гарниром и долькой лимона.'
+    ]
+  },
+  {
+    id:'plov',cat:'main',emoji:'🍚',
+    name:'Плов с курицей',
+    desc:'Упрощённый домашний плов на курином бедре с морковью, луком и чесноком.',
+    kbju:{k:590,b:30,zh:22,u:66},time:'55 мин',
+    ings:[
+      ['Бедро куриное (филе)','300 г'],['Рис','120 г'],['Морковь','1 шт'],
+      ['Лук репчатый','1 шт'],['Чеснок','3 зубчика'],['Масло растительное','3 ст. л.'],
+      ['Зира и специи','по вкусу']
+    ],
+    steps:[
+      'Обжарить курицу кусочками до корочки.',
+      'Добавить лук и морковь соломкой, жарить 7–8 минут.',
+      'Всыпать рис, залить водой на 1,5 см выше риса, воткнуть чеснок.',
+      'Готовить под крышкой на слабом огне 20–25 минут, не перемешивая.'
+    ]
+  }
+];
+
+/* ================= СОСТОЯНИЕ ================= */
+let prefs=['Курица','Творог'];          // предпочтения (заглушки)
+let bans=[];                             // «не употребляю»
+let cat='main';                          // текущий раздел
+let cart={};                             // список покупок: имя -> {entries:[{qty,dish}]}
+let currentDish=null;
+
+/* ================= ПРЕДПОЧТЕНИЯ ================= */
+function renderChips(){
+  const p=document.getElementById('prefs-chips');
+  p.innerHTML=prefs.length?'':'<span style="font-size:13px;color:var(--ink-soft)">Пока пусто</span>';
+  prefs.forEach((c,i)=>{
+    p.insertAdjacentHTML('beforeend',
+      `<span class="chip">${esc(c)}<button class="x" aria-label="Убрать ${esc(c)}" data-action="remove-chip" data-type="pref" data-index="${i}">✕</button></span>`);
+  });
+  const b=document.getElementById('ban-chips');
+  b.innerHTML=bans.length?'':'<span style="font-size:13px;color:var(--ink-soft)">Пока пусто — все блюда показаны</span>';
+  bans.forEach((c,i)=>{
+    b.insertAdjacentHTML('beforeend',
+      `<span class="chip banned">${esc(c)}<button class="x" aria-label="Убрать ${esc(c)}" data-action="remove-chip" data-type="ban" data-index="${i}">✕</button></span>`);
+  });
+}
+function addChip(type){
+  const input=document.getElementById(type==='pref'?'pref-input':'ban-input');
+  const v=input.value.trim();
+  if(!v)return;
+  (type==='pref'?prefs:bans).push(v);
+  input.value='';
+  renderChips();renderGrid();
+  if(type==='ban')toast(`«${v}» исключено — меню обновлено`);
+}
+function removeChip(type,i){
+  (type==='pref'?prefs:bans).splice(i,1);
+  renderChips();renderGrid();
+}
+function isBanned(dish){
+  return bans.some(b=>dish.ings.some(([n])=>n.toLowerCase().includes(b.toLowerCase()))
+    ||dish.name.toLowerCase().includes(b.toLowerCase()));
+}
+
+/* ================= МЕНЮ ================= */
+function setCat(c){
+  cat=c;
+  document.querySelectorAll('.seg button').forEach(b=>b.classList.toggle('active',b.dataset.cat===c));
+  renderGrid();
+}
+function renderGrid(){
+  const g=document.getElementById('grid');
+  const list=DISHES.filter(d=>d.cat===cat&&!isBanned(d));
+  const hidden=DISHES.filter(d=>d.cat===cat&&isBanned(d)).length;
+  if(!list.length){
+    g.innerHTML=`<div class="empty" style="grid-column:1/-1">Все блюда этого раздела скрыты из-за исключённых продуктов.<br>Убери что-нибудь из списка «Не употребляю».</div>`;
+    return;
+  }
+  g.innerHTML=list.map(d=>`
+    <button class="dish-card" data-action="open-dish" data-id="${d.id}">
+      <div class="photo ${d.cat==='breakfast'?'b':'m'}">${d.emoji}<small>здесь будет фото</small></div>
+      <div class="dish-body">
+        <div class="dish-name">${d.name}</div>
+        <div class="dish-desc">${d.desc}</div>
+        <div class="dish-meta"><span class="kcal">${d.kbju.k} ккал</span><span>⏱ ${d.time}</span></div>
+      </div>
+    </button>`).join('')
+    +(hidden?`<div class="empty" style="grid-column:1/-1;padding:8px">Скрыто блюд из-за исключений: ${hidden}</div>`:'');
+}
+
+/* ================= СТРАНИЦА БЛЮДА ================= */
+function openDish(id){
+  const d=DISHES.find(x=>x.id===id);currentDish=d;
+  const ph=document.getElementById('d-photo');
+  ph.className='photo '+(d.cat==='breakfast'?'b':'m');
+  ph.innerHTML=`${d.emoji}<small>здесь будет фото</small>`;
+  const tag=document.getElementById('d-tag');
+  tag.textContent=d.cat==='breakfast'?'Завтрак':'Основной приём';
+  tag.className='cat-tag '+(d.cat==='breakfast'?'b':'m');
+  document.getElementById('d-name').textContent=d.name;
+  document.getElementById('d-desc').textContent=d.desc;
+  document.getElementById('d-kbju').innerHTML=`
+    <div><b>${d.kbju.k}</b><span>ккал</span></div>
+    <div><b>${d.kbju.b}</b><span>белки, г</span></div>
+    <div><b>${d.kbju.zh}</b><span>жиры, г</span></div>
+    <div><b>${d.kbju.u}</b><span>углеводы, г</span></div>`;
+  document.getElementById('d-ings').innerHTML=
+    d.ings.map(([n,q])=>`<li><span>${n}</span><span class="qty">${q}</span></li>`).join('');
+  document.getElementById('d-steps').innerHTML=
+    d.steps.map(s=>`<li>${s}</li>`).join('');
+  const btn=document.getElementById('d-add');
+  btn.disabled=false;btn.textContent='Добавить продукты в список покупок';
+  document.getElementById('overlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeDish(){
+  document.getElementById('overlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+/* ================= СПИСОК ПОКУПОК ================= */
+function addToCart(){
+  if(!currentDish)return;
+  currentDish.ings.forEach(([n,q])=>{
+    if(!cart[n])cart[n]={entries:[]};
+    cart[n].entries.push({qty:q,dish:currentDish.name});
+  });
+  const btn=document.getElementById('d-add');
+  btn.disabled=true;btn.textContent='Добавлено ✓';
+  updateBadge();renderCart();
+  toast('Продукты добавлены в список');
+}
+function mergeQty(entries){
+  // если все количества в одной единице и начинаются с числа — суммируем
+  const parsed=entries.map(e=>{
+    const m=e.qty.match(/^([\d,.]+)\s*(.+)$/);
+    return m?{num:parseFloat(m[1].replace(',','.')),unit:m[2]}:null;
+  });
+  if(parsed.every(p=>p&&p.unit===parsed[0].unit)){
+    const sum=parsed.reduce((s,p)=>s+p.num,0);
+    return (Math.round(sum*100)/100)+' '+parsed[0].unit;
+  }
+  return entries.map(e=>e.qty).join(' + ');
+}
+function renderCart(){
+  const box=document.getElementById('cart-items');
+  const names=Object.keys(cart);
+  const actions=document.getElementById('cart-actions');
+  const dishBox=document.getElementById('cart-dishes');
+  if(!names.length){
+    box.innerHTML='<div class="r-empty">Список пуст.<br>Открой блюдо в меню и нажми<br>«Добавить продукты в список покупок».</div>';
+    actions.hidden=true;dishBox.textContent='';
+    return;
+  }
+  actions.hidden=false;
+  box.innerHTML=names.map(n=>{
+    const q=mergeQty(cart[n].entries);
+    const query=encodeURIComponent(n);
+    return `<div class="r-item">
+      <span class="n">${n}</span>
+      <span class="q">${q}</span>
+      <a class="shop-btn p" title="Найти в Перекрёстке" target="_blank" rel="noopener"
+         href="https://www.perekrestok.ru/cat/search?search=${query}">П</a>
+      <a class="shop-btn s" title="Найти в Самокате" target="_blank" rel="noopener"
+         href="https://samokat.ru/search?value=${query}">С</a>
+    </div>`;
+  }).join('');
+  const dishes=[...new Set(names.flatMap(n=>cart[n].entries.map(e=>e.dish)))];
+  dishBox.innerHTML='Блюда в списке: '+dishes.join(' · ');
+}
+function clearCart(){cart={};renderCart();updateBadge();}
+function copyCart(){
+  const names=Object.keys(cart);
+  const text='Список покупок:\n'+names.map(n=>`• ${n} — ${mergeQty(cart[n].entries)}`).join('\n');
+  function fallback(){
+    var ta=document.createElement('textarea');
+    ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();
+    try{document.execCommand('copy');toast('Список скопирован');}
+    catch(e){toast('Не удалось скопировать');}
+    document.body.removeChild(ta);
+  }
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(()=>toast('Список скопирован'),fallback);
+  }else fallback();
+}
+function updateBadge(){
+  const badge=document.getElementById('cart-badge');
+  const n=Object.keys(cart).length;
+  badge.hidden=!n;badge.textContent=n;
+}
+
+/* ================= НАВИГАЦИЯ И ПРОЧЕЕ ================= */
+function showPage(p){
+  document.getElementById('page-menu').hidden=p!=='menu';
+  document.getElementById('page-cart').hidden=p!=='cart';
+  document.getElementById('nav-menu').classList.toggle('active',p==='menu');
+  document.getElementById('nav-cart').classList.toggle('active',p==='cart');
+  window.scrollTo(0,0);
+}
+let toastTimer;
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2200);
+}
+function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+document.addEventListener('click',function(e){
+  var el=e.target.closest('[data-action]');
+  if(!el)return;
+  var a=el.dataset.action;
+  if(a==='page')showPage(el.dataset.page);
+  else if(a==='toggle-prefs')document.getElementById('prefs').classList.toggle('open');
+  else if(a==='add-chip')addChip(el.dataset.type);
+  else if(a==='remove-chip')removeChip(el.dataset.type,parseInt(el.dataset.index,10));
+  else if(a==='cat')setCat(el.dataset.cat);
+  else if(a==='open-dish')openDish(el.dataset.id);
+  else if(a==='close-dish')closeDish();
+  else if(a==='add-cart')addToCart();
+  else if(a==='copy-cart')copyCart();
+  else if(a==='clear-cart')clearCart();
+});
+document.getElementById('overlay').addEventListener('click',function(e){
+  if(e.target===this)closeDish();
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDish()});
+
+['pref-input','ban-input'].forEach(id=>{
+  document.getElementById(id).addEventListener('keydown',e=>{
+    if(e.key==='Enter')addChip(id==='pref-input'?'pref':'ban');
+  });
+});
+
+renderChips();renderGrid();renderCart();
+</script>
+</body>
+</html>
