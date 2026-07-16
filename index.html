@@ -44,6 +44,7 @@
   .logo{
     font-family:var(--font-display);
     font-weight:700;font-size:20px;letter-spacing:-0.5px;
+    background:none;border:none;padding:0;color:var(--ink);
   }
   .logo span{color:var(--green)}
   .tagline{color:var(--ink-soft);font-size:13px;margin-top:4px}
@@ -299,6 +300,27 @@
   .r-empty{text-align:center;color:var(--ink-soft);font-size:13px;padding:26px 0;line-height:1.7}
   .legend{font-size:11px;color:var(--ink-soft);text-align:center;margin-top:12px;font-family:var(--font-body)}
 
+  /* ---------- Итог по списку покупок ---------- */
+  .cart-summary{
+    display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+    background:var(--green-soft);border-radius:12px;padding:12px 14px;margin-bottom:14px;
+  }
+  .cart-summary .cs-count{font-size:12px;color:var(--green);font-weight:600}
+  .cart-summary .cs-total{font-family:var(--font-mono);font-size:17px;font-weight:700;color:var(--green)}
+  .cart-summary .cs-note{font-size:10px;color:var(--green);opacity:.75;display:block;font-family:var(--font-body);margin-top:2px;font-weight:400}
+
+  /* ---------- Цена и удаление позиции ---------- */
+  .r-item .price{
+    color:var(--ink);font-weight:600;white-space:nowrap;font-size:12px;min-width:52px;text-align:right;
+  }
+  .r-item .price.na{color:var(--ink-soft);font-weight:400}
+  .r-remove{
+    flex:none;width:26px;height:26px;border-radius:8px;border:1px solid var(--line);
+    background:var(--bg);display:flex;align-items:center;justify-content:center;
+    color:var(--red);font-size:14px;font-weight:700;line-height:1;
+  }
+  .r-remove:hover{background:#F7E3DC}
+
   /* ---------- Навигация ---------- */
   nav{
     position:fixed;bottom:0;left:0;right:0;z-index:40;
@@ -350,7 +372,7 @@
 </nav>
 
 <header>
-  <div class="logo">Домашнее <span>меню</span></div>
+  <button class="logo" data-action="page" data-page="menu">Домашнее <span>меню</span></button>
   <div class="tagline">Подборки блюд из продуктов Перекрёстка и Самоката · Курск</div>
 </header>
 
@@ -375,8 +397,12 @@
     <span class="sort-label">Сортировка</span>
     <div class="sort-select" id="sort-select">
       <button class="active" data-action="sort" data-s="default">По умолчанию</button>
-      <button data-action="sort" data-s="easiest">Сначала простые<span class="arrow-ind">▾</span></button>
-      <button data-action="sort" data-s="fastest">Сначала быстрые<span class="arrow-ind">▾</span></button>
+      <button data-action="sort" data-s="easiest" data-label-asc="Сначала простые" data-label-desc="Сначала сложные">
+        <span class="s-label">Сначала простые</span><span class="arrow-ind">▾</span>
+      </button>
+      <button data-action="sort" data-s="fastest" data-label-asc="Сначала быстрые" data-label-desc="Сначала долгие">
+        <span class="s-label">Сначала быстрые</span><span class="arrow-ind">▾</span>
+      </button>
     </div>
   </div>
 
@@ -389,6 +415,7 @@
     <h2>Список покупок</h2>
     <div class="sub">Перекрёсток · пр-кт Хрущёва, 2 &nbsp;/&nbsp; Самокат</div>
     <hr class="r-line">
+    <div id="cart-summary"></div>
     <div id="cart-items"></div>
     <div id="cart-dishes" class="r-dishes"></div>
     <div class="r-actions" id="cart-actions" hidden>
@@ -461,7 +488,7 @@
       <p class="dish-desc" id="d-desc"></p>
       <div class="tags" id="d-tags" style="margin-bottom:14px"></div>
       <div class="kbju" id="d-kbju"></div>
-      <div class="price-line"><b id="d-price"></b><span>примерная сумма заказа всех ингредиентов целыми упаковками. Базовые продукты (масло, соль, специи) обычно уже есть дома — реальный чек может быть ниже</span></div>
+      <div class="price-line"><b id="d-price"></b><span>Примерная стоимость на 16.07.26</span></div>
       <h3>Состав</h3>
       <ul class="ing-list" id="d-ings"></ul>
       <h3>Как приготовить</h3>
@@ -639,6 +666,28 @@ const DISHES=[
   }
 ];
 
+/* ================= ЦЕНЫ НА ПРОДУКТЫ (заглушки) =================
+   Условная цена за упаковку/единицу, как если бы покупали целиком
+   в Перекрёстке или Самокате. Используется для расчёта стоимости
+   позиций в списке покупок. Позже заменим на реальные цены. */
+const PRICES={
+  'Банан':70,'Бедро куриное (филе)':320,'Брокколи':180,'Говядина (лопатка)':650,
+  'Гранола':280,'Грецкие орехи':350,'Гречка':110,'Зира и специи':150,
+  'Йогурт греческий':160,'Картофель':90,'Лавровый лист':60,'Лимон':50,
+  'Лук репчатый':40,'Масло растительное':130,'Масло сливочное':180,
+  'Молоко 2,5%':95,'Морковь':45,'Мука пшеничная':70,'Мёд':320,
+  'Овсяные хлопья':110,'Огурцы':130,'Панировочные сухари':90,
+  'Паста (пенне)':110,'Перец болгарский':110,'Помидор':140,'Помидоры':140,
+  'Рис':100,'Сахар':70,'Сливки 20%':150,'Сметана 15%':110,'Соль':40,
+  'Специи для рыбы':130,'Сыр полутвёрдый':420,'Творог 5%':180,
+  'Томатная паста':90,'Фарш куриный':330,'Филе куриное':380,
+  'Филе минтая':420,'Чеснок':60,'Ягоды свежие или замороженные':250,
+  'Яйцо куриное':110
+};
+function priceFor(name){
+  return PRICES[name]!==undefined?PRICES[name]:null;
+}
+
 /* ================= СОСТОЯНИЕ ================= */
 const prefGroups={                       // 4 группы предпочтений по еде
   love:['Курица'],                       // люблю
@@ -649,6 +698,7 @@ const prefGroups={                       // 4 группы предпочтен�
 let cat='main';                          // текущий раздел
 let method='all';                        // фильтр способа приготовления
 let sort='default';                      // сортировка: default | easiest | fastest
+let sortDir=1;                           // направление: 1 = по возрастанию, -1 = по убыванию (переключается повторным нажатием)
 let cart={};                             // список покупок: имя -> {entries:[{qty,dish}]}
 let currentDish=null;
 
@@ -698,8 +748,21 @@ function setMethod(m){
   renderGrid();
 }
 function setSort(s){
-  sort=s;
-  document.querySelectorAll('.sort-select button').forEach(b=>b.classList.toggle('active',b.dataset.s===s));
+  if(s===sort&&s!=='default'){
+    sortDir=-sortDir;                    // повторный клик по активной сортировке — разворачиваем
+  }else{
+    sort=s;
+    sortDir=1;
+  }
+  document.querySelectorAll('.sort-select button').forEach(b=>{
+    const active=b.dataset.s===sort;
+    b.classList.toggle('active',active);
+    const arrow=b.querySelector('.arrow-ind');
+    const label=b.querySelector('.s-label');
+    const desc=active&&sortDir===-1;
+    if(arrow)arrow.textContent=desc?'▴':'▾';
+    if(label)label.textContent=desc?b.dataset.labelDesc:b.dataset.labelAsc;
+  });
   renderGrid();
 }
 function timeToMin(t){
@@ -725,11 +788,11 @@ function renderGrid(){
   const list=DISHES.filter(d=>d.cat===cat&&matchM(d)&&!isBanned(d));
   const hidden=DISHES.filter(d=>d.cat===cat&&matchM(d)&&isBanned(d)).length;
   if(sort==='easiest'){
-    // сначала простота (меньше звёзд), при равенстве — меньше времени
-    list.sort((a,b)=>(a.diff-b.diff)||(timeToMin(a.time)-timeToMin(b.time)));
+    // сначала простота (меньше звёзд), при равенстве — меньше времени; повторный клик разворачивает порядок
+    list.sort((a,b)=>sortDir*((a.diff-b.diff)||(timeToMin(a.time)-timeToMin(b.time))));
   }else if(sort==='fastest'){
-    // сначала время, при равенстве — простота
-    list.sort((a,b)=>(timeToMin(a.time)-timeToMin(b.time))||(a.diff-b.diff));
+    // сначала время, при равенстве — простота; повторный клик разворачивает порядок
+    list.sort((a,b)=>sortDir*((timeToMin(a.time)-timeToMin(b.time))||(a.diff-b.diff)));
   }
   if(!list.length){
     g.innerHTML=`<div class="empty" style="grid-column:1/-1">${method==='all'
@@ -812,36 +875,67 @@ function mergeQty(entries){
   }
   return entries.map(e=>e.qty).join(' + ');
 }
+function estimatePrice(name,entries){
+  // грубая оценка: считаем, сколько «упаковок» нужно исходя из количества использований блюда
+  const base=priceFor(name);
+  if(base===null)return null;
+  return base*entries.length;
+}
 function renderCart(){
   const box=document.getElementById('cart-items');
+  const summary=document.getElementById('cart-summary');
   const names=Object.keys(cart);
   const actions=document.getElementById('cart-actions');
   const dishBox=document.getElementById('cart-dishes');
   if(!names.length){
+    summary.innerHTML='';
     box.innerHTML='<div class="r-empty">Список пуст.<br>Открой блюдо в меню и нажми<br>«Добавить продукты в список покупок».</div>';
     actions.hidden=true;dishBox.textContent='';
     return;
   }
   actions.hidden=false;
+  let total=0,unknownCount=0;
   box.innerHTML=names.map(n=>{
     const q=mergeQty(cart[n].entries);
     const query=encodeURIComponent(n);
+    const price=estimatePrice(n,cart[n].entries);
+    if(price!==null)total+=price;else unknownCount++;
+    const priceHtml=price!==null
+      ?`<span class="price">${price.toLocaleString('ru-RU')} ₽</span>`
+      :`<span class="price na">—</span>`;
     return `<div class="r-item">
       <span class="n">${n}</span>
       <span class="q">${q}</span>
+      ${priceHtml}
       <a class="shop-btn p" data-shop="p" data-query="${query}" title="Найти в Перекрёстке" target="_blank" rel="noopener"
          href="https://www.perekrestok.ru/cat/search?search=${query}">П</a>
       <a class="shop-btn s" data-shop="s" data-query="${query}" title="Найти в Самокате" target="_blank" rel="noopener"
          href="https://samokat.ru/search?value=${query}">С</a>
+      <button class="r-remove" data-action="remove-cart-item" data-name="${esc(n)}" aria-label="Убрать «${esc(n)}» из списка" title="Убрать из списка">✕</button>
     </div>`;
   }).join('');
+  summary.innerHTML=`<div class="cart-summary">
+      <span class="cs-count">Позиций в списке: ${names.length}</span>
+      <span class="cs-total">≈ ${total.toLocaleString('ru-RU')} ₽${unknownCount?`<span class="cs-note">без учёта ${unknownCount} поз. без цены</span>`:''}</span>
+    </div>`;
   const dishes=[...new Set(names.flatMap(n=>cart[n].entries.map(e=>e.dish)))];
   dishBox.innerHTML='Блюда в списке: '+dishes.join(' · ');
+}
+function removeCartItem(name){
+  delete cart[name];
+  renderCart();updateBadge();
 }
 function clearCart(){cart={};renderCart();updateBadge();}
 function copyCart(){
   const names=Object.keys(cart);
-  const text='Список покупок:\n'+names.map(n=>`• ${n} — ${mergeQty(cart[n].entries)}`).join('\n');
+  let total=0;
+  const lines=names.map(n=>{
+    const price=estimatePrice(n,cart[n].entries);
+    if(price!==null)total+=price;
+    const priceText=price!==null?` — ≈${price.toLocaleString('ru-RU')} ₽`:'';
+    return `• ${n} — ${mergeQty(cart[n].entries)}${priceText}`;
+  });
+  const text='Список покупок:\n'+lines.join('\n')+`\n\nПозиций: ${names.length} · Итого ≈ ${total.toLocaleString('ru-RU')} ₽`;
   function fallback(){
     var ta=document.createElement('textarea');
     ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
@@ -893,6 +987,7 @@ document.addEventListener('click',function(e){
   else if(a==='go-cart')goToCart();
   else if(a==='copy-cart')copyCart();
   else if(a==='clear-cart')clearCart();
+  else if(a==='remove-cart-item')removeCartItem(el.dataset.name);
 });
 document.getElementById('overlay').addEventListener('click',function(e){
   if(e.target===this)closeDish();
