@@ -48,6 +48,16 @@
   }
   .logo span{color:var(--green)}
   .tagline{color:var(--ink-soft);font-size:13px;margin-top:4px}
+  .header-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .header-shops{display:flex;gap:8px;flex:none}
+  .shop-badge{
+    width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-mono);font-size:14px;font-weight:700;text-decoration:none;flex:none;
+    transition:transform .15s;
+  }
+  .shop-badge:hover{transform:translateY(-1px)}
+  .shop-badge.p{background:#E4F3E7;color:#0E7A3B}
+  .shop-badge.s{background:#FCE4F1;color:#C8207E}
 
   .wrap{max-width:960px;margin:0 auto;padding:0 16px}
 
@@ -285,12 +295,14 @@
   .r-item .n{flex:1;line-height:1.35}
   .r-item .q{color:var(--ink-soft);white-space:nowrap;font-size:12px}
   .shop-btn{
-    flex:none;width:26px;height:26px;border-radius:8px;border:1px solid var(--line);
-    background:var(--bg);font-family:var(--font-mono);font-size:11px;font-weight:600;
-    display:flex;align-items:center;justify-content:center;text-decoration:none;color:var(--ink);
+    flex:none;width:26px;height:26px;border-radius:8px;border:none;
+    font-family:var(--font-mono);font-size:12px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;text-decoration:none;
+    transition:transform .15s;
   }
-  .shop-btn.p{color:#0E7A3B}
-  .shop-btn.s{color:#C8207E}
+  .shop-btn:hover{transform:translateY(-1px)}
+  .shop-btn.p{background:#E4F3E7;color:#0E7A3B}
+  .shop-btn.s{background:#FCE4F1;color:#C8207E}
   .r-dishes{font-size:11px;color:var(--ink-soft);margin-top:10px;line-height:1.6}
   .r-actions{display:flex;gap:8px;margin-top:16px}
   .r-actions button{
@@ -372,7 +384,13 @@
 </nav>
 
 <header>
-  <button class="logo" data-action="page" data-page="menu">Домашнее <span>меню</span></button>
+  <div class="header-row">
+    <button class="logo" data-action="page" data-page="menu">Домашнее <span>меню</span></button>
+    <div class="header-shops">
+      <a class="shop-badge p" href="https://www.perekrestok.ru" target="_blank" rel="noopener" title="Перекрёсток" aria-label="Перекрёсток">П</a>
+      <a class="shop-badge s" href="https://samokat.ru" target="_blank" rel="noopener" title="Самокат" aria-label="Самокат">С</a>
+    </div>
+  </div>
   <div class="tagline">Подборки блюд из продуктов Перекрёстка и Самоката · Курск</div>
 </header>
 
